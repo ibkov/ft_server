@@ -3,9 +3,10 @@ FROM debian:buster
 
 # Copy all files
 COPY srcs/* ./tmp/
+RUN chmod 755 /tmp/autoindex.sh
 
 # Install all utilites
-RUN apt-get update
+RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get -y install nginx
 RUN apt-get -y install mariadb-server
@@ -20,7 +21,6 @@ RUN tar -xzvf latest.tar.gz
 RUN mkdir var/www/site_dir
 RUN mv wordpress/ /var/www/site_dir/wordpress
 RUN cp /tmp/wp-config.php /var/www/site_dir/wordpress
-RUN cp /tmp/index.html /var/www/site_dir
 
 # Install and configure phpMyAdmin
 RUN wget https://files.phpmyadmin.net/phpMyAdmin/5.0.2/phpMyAdmin-5.0.2-english.tar.gz
@@ -28,6 +28,8 @@ RUN tar -xzvf phpMyAdmin-5.0.2-english.tar.gz
 RUN mv phpMyAdmin-5.0.2-english/ /var/www/site_dir/phpmyadmin
 RUN cp /tmp/config.inc.php /var/www/site_dir/phpmyadmin
 RUN rm latest.tar.gz && rm phpMyAdmin-5.0.2-english.tar.gz
+RUN mkdir /var/lib/phpmyadmin
+RUN chmod -R 777 /var/lib/phpmyadmin
 
 # Install SSL certifier
 RUN wget -O mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.3.0/mkcert-v1.3.0-linux-amd64
@@ -44,6 +46,9 @@ RUN rm /etc/nginx/sites-enabled/default
 RUN mkcert localhost
 RUN mv localhost.pem /etc/nginx/
 RUN mv localhost-key.pem /etc/nginx/
+
+RUN chown -R www-data /var/www/*
+RUN chmod -R 755 /var/www/*
 
 # Expose HTTP and HTTPS ports
 EXPOSE 80 443
